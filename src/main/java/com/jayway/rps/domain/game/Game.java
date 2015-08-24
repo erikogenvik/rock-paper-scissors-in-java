@@ -1,10 +1,5 @@
 package com.jayway.rps.domain.game;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
-import com.jayway.es.api.Event;
 import com.jayway.rps.domain.Move;
 import com.jayway.rps.domain.command.CreateGameCommand;
 import com.jayway.rps.domain.command.MakeMoveCommand;
@@ -12,61 +7,85 @@ import com.jayway.rps.domain.event.GameCreatedEvent;
 import com.jayway.rps.domain.event.GameTiedEvent;
 import com.jayway.rps.domain.event.GameWonEvent;
 import com.jayway.rps.domain.event.MoveDecidedEvent;
+import org.axonframework.commandhandling.annotation.CommandHandler;
+import org.axonframework.eventsourcing.annotation.AbstractAnnotatedAggregateRoot;
+import org.axonframework.eventsourcing.annotation.AggregateIdentifier;
+import org.axonframework.eventsourcing.annotation.EventSourcingHandler;
 
-public class Game {
-	enum State {
-		notInitalized, created, waiting, tied, won
-	}
-	private State state = State.notInitalized;
-	private String player;
-	private Move move;
+import java.util.UUID;
 
-	public List<Event> handle(CreateGameCommand c) {
-		if (state != State.notInitalized) throw new IllegalStateException(state.toString());
-		return Arrays.asList(
-				new GameCreatedEvent(c.gameId, c.playerEmail));
-	}
+public class Game extends AbstractAnnotatedAggregateRoot<UUID> {
+    enum State {
+        notInitalized, created, waiting, tied, won
+    }
 
-	public List<Event> handle(MakeMoveCommand c) {
-		if (State.created == state) {
-			return Arrays.asList(new MoveDecidedEvent(c.gameId, c.playerEmail, c.move));
-		} else if (State.waiting == state) {
-			if (player.equals(c.playerEmail)) throw new IllegalArgumentException("Player already in game");
-			return Arrays.asList(
-					new MoveDecidedEvent(c.gameId, c.playerEmail, c.move),
-					makeEndGameEvent(c.gameId, c.playerEmail, c.move));
-		} else {
-			throw new IllegalStateException(state.toString());
-		}
-	}
+    @AggregateIdentifier
+    private UUID identifier;
 
-	private Event makeEndGameEvent(UUID gameId, String opponentEmail, Move opponentMove) {
-		if (move.defeats(opponentMove)) {
-			return new GameWonEvent(gameId, player, opponentEmail);
-		} else if (opponentMove.defeats(move)) {
-			return new GameWonEvent(gameId, opponentEmail, player);
-		} else {
-			return new GameTiedEvent(gameId);
-		}
-	}
+    private State state = State.notInitalized;
+    private String player;
+    private Move move;
 
-	public void handle(GameCreatedEvent e) {
-		state = State.created;
-	}
-	
-	public void handle(MoveDecidedEvent e) {
-		if (state == State.created) {
-			move = e.move;
-			player = e.playerEmail;
-			state = State.waiting;
-		}
-	}
+    public Game() {
+        
+    }
 
-	public void handle(GameWonEvent e) {
-		state = State.won;
-	}
+    @CommandHandler
+    public Game(CreateGameCommand c) {
+        if (state != State.notInitalized) throw new IllegalStateException(state.toString());
+        apply(new GameCreatedEvent(c.gameId, c.playerEmail));
+    }
 
-	public void handle(GameTiedEvent e) {
-		state = State.tied;
-	}
+    @CommandHandler
+    public void handle(MakeMoveCommand c) {
+        if (State.created == state) {
+            apply(new MoveDecidedEvent(c.gameId, c.playerEmail, c.move));
+        } else if (State.waiting == state) {
+            if (player.equals(c.playerEmail)) throw new IllegalArgumentException("Player already in game");
+            apply(new MoveDecidedEvent(c.gameId, c.playerEmail, c.move));
+            apply(makeEndGameEvent(c.gameId, c.playerEmail, c.move));
+        } else {
+            throw new IllegalStateException(state.toString());
+        }
+    }
+
+    private Object makeEndGameEvent(UUID gameId, String opponentEmail, Move opponentMove) {
+        if (move.defeats(opponentMove)) {
+            return new GameWonEvent(gameId, player, opponentEmail);
+        } else if (opponentMove.defeats(move)) {
+            return new GameWonEvent(gameId, opponentEmail, player);
+        } else {
+            return new GameTiedEvent(gameId);
+        }
+    }
+
+    @CommandHandler
+    public void handle(GameCreatedEvent e) {
+        state = State.created;
+    }
+
+    @CommandHandler
+    public void handle(MoveDecidedEvent e) {
+        if (state == State.created) {
+            move = e.move;
+            player = e.playerEmail;
+            state = State.waiting;
+        }
+    }
+
+    @CommandHandler
+    public void handle(GameWonEvent e) {
+        state = State.won;
+    }
+
+    @CommandHandler
+    public void handle(GameTiedEvent e) {
+        state = State.tied;
+    }
+
+    @EventSourcingHandler
+    public void on(GameCreatedEvent event) {
+        this.identifier = event.gameId;
+    }
+
 }

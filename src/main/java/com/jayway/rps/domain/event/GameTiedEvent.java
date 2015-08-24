@@ -2,9 +2,7 @@ package com.jayway.rps.domain.event;
 
 import java.util.UUID;
 
-import com.jayway.es.api.Event;
-
-public class GameTiedEvent implements Event {
+public class GameTiedEvent  {
 	public final UUID gameId;
 	
 	GameTiedEvent() {

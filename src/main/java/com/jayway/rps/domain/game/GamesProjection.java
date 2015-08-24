@@ -1,62 +1,71 @@
 package com.jayway.rps.domain.game;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import com.jayway.rps.domain.Move;
 import com.jayway.rps.domain.event.GameCreatedEvent;
 import com.jayway.rps.domain.event.GameTiedEvent;
 import com.jayway.rps.domain.event.GameWonEvent;
 import com.jayway.rps.domain.event.MoveDecidedEvent;
+import org.axonframework.eventhandling.annotation.EventHandler;
+import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+@Component
 public class GamesProjection {
-	public static enum State {
-		inProgress(false), 
-		won(true), 
-		tied(true);
-		
-		public final boolean completed;
+    public enum State {
+        inProgress(false),
+        won(true),
+        tied(true);
 
-		private State(boolean completed) {
-			this.completed = completed;
-		}
-	}
-	public static class GameState {
-		public UUID gameId;
-		public String createdBy;
-		public Map<String, Move> moves = new HashMap<String, Move>();
-		public State state;
-		public String winner;
-		public String loser;
-	}
-	private Map<UUID, GameState> games = new HashMap<>();
-	
-	public GameState get(UUID gameId) {
-		return games.get(gameId);
-	}
+        public final boolean completed;
 
-	public void handle(GameCreatedEvent e) {
-		GameState game = new GameState();
-		game.gameId = e.gameId;
-		game.state = State.inProgress;
-		games.put(e.gameId, game);
-	}
-	
-	public void handle(MoveDecidedEvent e) {
-		GameState game = games.get(e.gameId);
-		game.moves.put(e.playerEmail, e.move);
-	}
+        State(boolean completed) {
+            this.completed = completed;
+        }
+    }
 
-	public void handle(GameWonEvent e) {
-		GameState game = games.get(e.gameId);
-		game.state = State.won;
-		game.winner = e.winnerEmail;
-		game.loser = e.loserEmail;
-	}
+    public static class GameState {
+        public UUID gameId;
+        public String createdBy;
+        public Map<String, Move> moves = new HashMap<String, Move>();
+        public State state;
+        public String winner;
+        public String loser;
+    }
 
-	public void handle(GameTiedEvent e) {
-		GameState game = games.get(e.gameId);
-		game.state = State.tied;
-	}
+    private Map<UUID, GameState> games = new HashMap<>();
+
+    public GameState get(UUID gameId) {
+        return games.get(gameId);
+    }
+
+    @EventHandler
+    public void handle(GameCreatedEvent e) {
+        GameState game = new GameState();
+        game.gameId = e.gameId;
+        game.state = State.inProgress;
+        games.put(e.gameId, game);
+    }
+
+    @EventHandler
+    public void handle(MoveDecidedEvent e) {
+        GameState game = games.get(e.gameId);
+        game.moves.put(e.playerEmail, e.move);
+    }
+
+    @EventHandler
+    public void handle(GameWonEvent e) {
+        GameState game = games.get(e.gameId);
+        game.state = State.won;
+        game.winner = e.winnerEmail;
+        game.loser = e.loserEmail;
+    }
+
+    @EventHandler
+    public void handle(GameTiedEvent e) {
+        GameState game = games.get(e.gameId);
+        game.state = State.tied;
+    }
 }

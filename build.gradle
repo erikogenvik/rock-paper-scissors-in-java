@@ -1,7 +1,20 @@
-apply plugin: 'java'
-apply plugin: 'eclipse'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.3.RELEASE")
+    }
+}
+
 apply plugin: 'idea'
-apply plugin: 'war'
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+apply plugin: 'eclipse'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 
 repositories {
     mavenLocal()
@@ -12,32 +25,33 @@ configurations {
     providedRuntime
 }
 
-// remove unnecessary transitive dependencies (eg tomcat)
 dependencies {
-    compile 'ch.qos.logback:logback-classic:1.1.2'
-    compile 'org.slf4j:log4j-over-slf4j:1.7.10'
 
-    compile("org.glassfish.jersey.containers:jersey-container-servlet:2.13")
-    compile("org.glassfish.jersey.media:jersey-media-json-jackson:2.13")
-    compile('org.glassfish.jersey.media:jersey-media-multipart:2.15')
+    compile("org.springframework.boot:spring-boot-starter-data-jpa")
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.hateoas:spring-hateoas:0.18.0.RELEASE")
+    compile 'org.springframework.data:spring-data-jpa:1.7.1.RELEASE'
+    compile("org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE")
 
-    compile("com.fasterxml.jackson.core:jackson-annotations:2.4.1")
-    compile("com.fasterxml.jackson.core:jackson-databind:2.4.1")
-    compile("com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.4.1")
+    compile("com.h2database:h2")
 
-    compile("org.apache.tomcat.embed:tomcat-embed-core:8.0.18")
-    compile('org.apache.tomcat.embed:tomcat-embed-logging-log4j:8.0.18')
-    compile('org.apache.tomcat.embed:tomcat-embed-jasper:8.0.18')
-    compile('org.apache.tomcat.embed:tomcat-embed-el:8.0.18')
+    compile("org.axonframework:axon-core:2.4")
 
-	compile 'com.geteventstore:eventstore-client_2.11:2.0.0'
-	compile 'com.netflix.hystrix:hystrix-core:1.4.0'
+    compile("javax.inject:javax.inject:1")
 
-	testCompile("junit:junit-dep:4.11")
+    compile('org.apache.commons:commons-lang3:3.3.2')
+
+
+    runtime('postgresql:postgresql:9.1-901-1.jdbc4')
+
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile('com.jayway.restassured:rest-assured:2.4.0')
+    testCompile('org.glassfish:javax.json:1.0.4')
+    testCompile("junit:junit-dep:4.11")
 }
 
 eclipse {
-	classpath {
-		defaultOutputDir = file('build/eclipse')
-	}
+    classpath {
+        defaultOutputDir = file('build/eclipse')
+    }
 }

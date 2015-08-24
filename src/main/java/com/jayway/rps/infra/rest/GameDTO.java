@@ -1,9 +1,9 @@
 package com.jayway.rps.infra.rest;
 
+import com.jayway.rps.domain.Move;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.jayway.rps.domain.Move;
 
 public class GameDTO {
 	public String gameId;

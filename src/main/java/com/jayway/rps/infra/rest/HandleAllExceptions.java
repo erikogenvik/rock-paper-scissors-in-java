@@ -1,13 +1,18 @@
 package com.jayway.rps.infra.rest;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
-public class HandleAllExceptions implements ExceptionMapper<Exception> {
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
-	@Override
-	public Response toResponse(Exception exception) {
-		return Response.status(400).entity(exception.getMessage()).build();
-	}
+@Component
+public class HandleAllExceptions {
+
+    @ExceptionHandler(Exception.class)
+    void handleBadRequests(Exception exception, HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.BAD_REQUEST.value(), exception.getMessage());
+    }
 
 }

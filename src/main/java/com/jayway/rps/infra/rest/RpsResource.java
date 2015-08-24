@@ -1,67 +1,62 @@
 package com.jayway.rps.infra.rest;
 
-import java.util.UUID;
-
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-
-import com.jayway.es.impl.ApplicationService;
 import com.jayway.rps.domain.Move;
 import com.jayway.rps.domain.command.CreateGameCommand;
 import com.jayway.rps.domain.command.MakeMoveCommand;
 import com.jayway.rps.domain.game.GamesProjection;
 import com.jayway.rps.domain.game.GamesProjection.GameState;
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
-@Path("games")
+import javax.inject.Inject;
+import java.util.UUID;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+@Controller
+@RequestMapping("games")
 public class RpsResource {
-    private ApplicationService applicationService;
-	private GamesProjection gamesProjection;
 
-	public RpsResource(ApplicationService applicationService, GamesProjection gamesProjection) {
-		this.applicationService = applicationService;
-		this.gamesProjection = gamesProjection;
-	}
+    @Inject
+    CommandGateway commandGateway;
 
-	@POST
-    public Response createGame(@HeaderParam("SimpleIdentity") String email) throws Exception {
-		UUID gameId = UUID.randomUUID();
-		applicationService.handle(new CreateGameCommand(gameId, email));
-		return Response.created(UriBuilder.fromMethod(RpsResource.class, "game").build(gameId.toString())).build();
+    @Inject
+    private GamesProjection gamesProjection;
+
+
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity createGame(@RequestHeader("SimpleIdentity") String email) throws Exception {
+        UUID gameId = UUID.randomUUID();
+        commandGateway.send(new CreateGameCommand(gameId, email));
+        return ResponseEntity.created(linkTo(methodOn(RpsResource.class).game(gameId.toString())).toUri()).build();
     }
 
-	@GET
-	@Path("{gameId}")
-	@Produces(MediaType.APPLICATION_JSON)
+    @RequestMapping(value = "{gameId}", produces = APPLICATION_JSON_VALUE)
     public GameDTO game(
-    		@PathParam("gameId") String gameId) throws Exception {
-		GameState gameState = gamesProjection.get(UUID.fromString(gameId));
-		GameDTO dto = new GameDTO();
-		dto.gameId = gameState.gameId.toString();
-		dto.createdBy = gameState.createdBy;
-		dto.state = gameState.state.toString();
-		if (gameState.state.completed) {
-			dto.winner = gameState.winner;
-			dto.loser = gameState.loser;
-			dto.moves = gameState.moves;
-		}
-		return dto;
+            @PathVariable("gameId") String gameId) throws Exception {
+        GameState gameState = gamesProjection.get(UUID.fromString(gameId));
+        GameDTO dto = new GameDTO();
+        dto.gameId = gameState.gameId.toString();
+        dto.createdBy = gameState.createdBy;
+        dto.state = gameState.state.toString();
+        if (gameState.state.completed) {
+            dto.winner = gameState.winner;
+            dto.loser = gameState.loser;
+            dto.moves = gameState.moves;
+        }
+        return dto;
     }
 
-	@POST
-	@Path("{gameId}")
+    @RequestMapping(value = "{gameId}", method = RequestMethod.POST)
     public void makeMove(
-    		@PathParam("gameId") String gameId, 
-    		@HeaderParam("SimpleIdentity") String email,
-    		@FormParam("move") Move move) throws Exception {
-		
-		applicationService.handle(new MakeMoveCommand(UUID.fromString(gameId), email, move));
+            @PathVariable("gameId") String gameId,
+            @RequestHeader("SimpleIdentity") String email,
+            @RequestParam("move") Move move) throws Exception {
+
+        commandGateway.send(new MakeMoveCommand(UUID.fromString(gameId), email, move));
     }
 }

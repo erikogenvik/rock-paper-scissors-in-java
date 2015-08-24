@@ -1,10 +1,8 @@
 package com.jayway.rps.domain.event;
 
-import com.jayway.es.api.Event;
-
 import java.util.UUID;
 
-public class GameCreatedEvent implements Event {
+public class GameCreatedEvent {
 	public final UUID gameId;
 	public final String playerEmail;
 	

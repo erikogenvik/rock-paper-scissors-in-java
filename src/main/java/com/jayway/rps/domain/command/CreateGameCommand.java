@@ -2,9 +2,7 @@ package com.jayway.rps.domain.command;
 
 import java.util.UUID;
 
-import com.jayway.es.api.Command;
-
-public class CreateGameCommand implements Command {
+public class CreateGameCommand {
 	public final UUID gameId;
 	public final String playerEmail;
 	
@@ -15,7 +13,6 @@ public class CreateGameCommand implements Command {
 		this.playerEmail = playerEmail;
 	}
 
-	@Override
 	public UUID aggregateId() {
 		return gameId;
 	}
