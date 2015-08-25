@@ -18,11 +18,17 @@ import org.axonframework.eventstore.fs.SimpleEventFileResolver;
 import org.axonframework.serializer.xml.XStreamSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.orm.jpa.EntityScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.hateoas.config.EnableEntityLinks;
 
 import java.io.File;
 
+@ComponentScan(basePackages = "com.jayway")
+@EnableAutoConfiguration
 @Configuration
 public class RpsConfig {
     private static final Logger logger = LoggerFactory.getLogger(RpsConfig.class);

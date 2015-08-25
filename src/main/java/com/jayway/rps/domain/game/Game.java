@@ -27,12 +27,13 @@ public class Game extends AbstractAnnotatedAggregateRoot<UUID> {
     private Move move;
 
     public Game() {
-        
+
     }
 
     @CommandHandler
     public Game(CreateGameCommand c) {
         if (state != State.notInitalized) throw new IllegalStateException(state.toString());
+
         apply(new GameCreatedEvent(c.gameId, c.playerEmail));
     }
 
@@ -59,12 +60,8 @@ public class Game extends AbstractAnnotatedAggregateRoot<UUID> {
         }
     }
 
-    @CommandHandler
-    public void handle(GameCreatedEvent e) {
-        state = State.created;
-    }
 
-    @CommandHandler
+    @EventSourcingHandler
     public void handle(MoveDecidedEvent e) {
         if (state == State.created) {
             move = e.move;
@@ -73,18 +70,19 @@ public class Game extends AbstractAnnotatedAggregateRoot<UUID> {
         }
     }
 
-    @CommandHandler
+    @EventSourcingHandler
     public void handle(GameWonEvent e) {
         state = State.won;
     }
 
-    @CommandHandler
+    @EventSourcingHandler
     public void handle(GameTiedEvent e) {
         state = State.tied;
     }
 
     @EventSourcingHandler
     public void on(GameCreatedEvent event) {
+        state = State.created;
         this.identifier = event.gameId;
     }
 

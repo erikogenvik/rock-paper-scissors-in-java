@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.3.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.5.RELEASE")
     }
 }
 
@@ -29,7 +29,7 @@ dependencies {
 
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
     compile("org.springframework.boot:spring-boot-starter-web")
-    compile("org.springframework.hateoas:spring-hateoas:0.18.0.RELEASE")
+    compile("org.springframework.hateoas:spring-hateoas:0.16.0.RELEASE")
     compile 'org.springframework.data:spring-data-jpa:1.7.1.RELEASE'
     compile("org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE")
 
@@ -48,6 +48,7 @@ dependencies {
     testCompile('com.jayway.restassured:rest-assured:2.4.0')
     testCompile('org.glassfish:javax.json:1.0.4')
     testCompile("junit:junit-dep:4.11")
+    testCompile("org.axonframework:axon-test:2.4")
 }
 
 eclipse {

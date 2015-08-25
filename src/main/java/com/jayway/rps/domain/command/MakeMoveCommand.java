@@ -1,10 +1,12 @@
 package com.jayway.rps.domain.command;
 
 import com.jayway.rps.domain.Move;
+import org.axonframework.commandhandling.annotation.TargetAggregateIdentifier;
 
 import java.util.UUID;
 
 public class MakeMoveCommand {
+    @TargetAggregateIdentifier
     public final UUID gameId;
     public final String playerEmail;
     public final Move move;

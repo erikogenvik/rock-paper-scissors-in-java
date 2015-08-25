@@ -1,8 +1,11 @@
 package com.jayway.rps.domain.command;
 
+import org.axonframework.commandhandling.annotation.TargetAggregateIdentifier;
+
 import java.util.UUID;
 
 public class CreateGameCommand {
+	@TargetAggregateIdentifier
 	public final UUID gameId;
 	public final String playerEmail;
 	

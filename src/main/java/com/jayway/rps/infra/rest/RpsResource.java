@@ -18,7 +18,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Controller
-@RequestMapping("games")
+@RequestMapping("/v1/games")
 public class RpsResource {
 
     @Inject
@@ -35,9 +35,9 @@ public class RpsResource {
         return ResponseEntity.created(linkTo(methodOn(RpsResource.class).game(gameId.toString())).toUri()).build();
     }
 
-    @RequestMapping(value = "{gameId}", produces = APPLICATION_JSON_VALUE)
-    public GameDTO game(
-            @PathVariable("gameId") String gameId) throws Exception {
+    @RequestMapping(value = "/{gameId}", produces = APPLICATION_JSON_VALUE, consumes = "*")
+    public ResponseEntity<GameDTO> game(
+            @PathVariable("gameId") String gameId) {
         GameState gameState = gamesProjection.get(UUID.fromString(gameId));
         GameDTO dto = new GameDTO();
         dto.gameId = gameState.gameId.toString();
@@ -48,10 +48,10 @@ public class RpsResource {
             dto.loser = gameState.loser;
             dto.moves = gameState.moves;
         }
-        return dto;
+        return ResponseEntity.ok(dto);
     }
 
-    @RequestMapping(value = "{gameId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{gameId}", method = RequestMethod.POST)
     public void makeMove(
             @PathVariable("gameId") String gameId,
             @RequestHeader("SimpleIdentity") String email,
