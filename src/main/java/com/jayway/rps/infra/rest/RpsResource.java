@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
+import javax.xml.ws.Response;
 import java.util.UUID;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -27,7 +28,6 @@ public class RpsResource {
     @Inject
     private GamesProjection gamesProjection;
 
-
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity createGame(@RequestHeader("SimpleIdentity") String email) throws Exception {
         UUID gameId = UUID.randomUUID();
@@ -35,7 +35,7 @@ public class RpsResource {
         return ResponseEntity.created(linkTo(methodOn(RpsResource.class).game(gameId.toString())).toUri()).build();
     }
 
-    @RequestMapping(value = "/{gameId}", produces = APPLICATION_JSON_VALUE, consumes = "*")
+    @RequestMapping(value = "/{gameId}", produces = APPLICATION_JSON_VALUE, consumes = "*", method = RequestMethod.GET)
     public ResponseEntity<GameDTO> game(
             @PathVariable("gameId") String gameId) {
         GameState gameState = gamesProjection.get(UUID.fromString(gameId));
@@ -52,11 +52,16 @@ public class RpsResource {
     }
 
     @RequestMapping(value = "/{gameId}", method = RequestMethod.POST)
-    public void makeMove(
+    public ResponseEntity makeMove(
             @PathVariable("gameId") String gameId,
             @RequestHeader("SimpleIdentity") String email,
-            @RequestParam("move") Move move) throws Exception {
+            @RequestBody MoveSpec spec) throws Exception {
 
-        commandGateway.send(new MakeMoveCommand(UUID.fromString(gameId), email, move));
+        try {
+            commandGateway.sendAndWait(new MakeMoveCommand(UUID.fromString(gameId), email, spec.move));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

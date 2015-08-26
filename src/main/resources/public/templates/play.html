@@ -1,0 +1,28 @@
+<div ng-controller="PlayCtrl" xmlns="http://www.w3.org/1999/html">
+	<h1>Play game!</h1>
+
+	<label for="playerName">Name:</label><input ng-model="playerName" id="playerName"/>
+
+	<div ng-show="playerName && !currentGame">
+		<button id="btnCreateGame" ng-click="createGame()">Create
+			Game</button>
+		<label for="gameId">Joing game id</label> <input ng-model="gameId" id="gameId" ng-disabled="currentGame"/>
+		<button id="btnJoinGame" ng-click="join()">Join game</button>
+	</div>
+
+	<div ng-show="playerName && currentGame">
+		Game id: {{currentGame.gameId}}
+	</div>
+	<div ng-show="playerName && currentGame.state == 'inProgress'">
+		<select id="choice" ng-model="choice">
+			<option value="ROCK">rock</option>
+			<option value="PAPER">paper</option>
+			<option value="SCISSOR">scissor</option>
+		</select>
+		<button ng-click="deal()">Deal</button>
+	</div>
+	<div ng-show="currentGame.state == 'won'">
+		<h1>Game finished</h1>
+		The winner is: {{currentGame.winner}}
+	</div>
+</div>
