@@ -27,7 +27,7 @@ public class GraphQLResource {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity query(@RequestBody String query) {
-        ExecutionResult result = new GraphQL(RPSSchema.Schema).execute(query, gamesProjection);
+        ExecutionResult result = new GraphQL(RPSSchema.Schema).execute(query, new GraphQLContext(gamesProjection, commandGateway));
 
         return ResponseEntity.ok(result.getData());
     }

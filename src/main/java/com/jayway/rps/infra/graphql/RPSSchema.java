@@ -1,8 +1,10 @@
 package com.jayway.rps.infra.graphql;
 
 import com.jayway.rps.domain.Move;
+import com.jayway.rps.domain.command.CreateGameCommand;
 import com.jayway.rps.domain.game.GamesProjection;
 import graphql.schema.*;
+import org.axonframework.commandhandling.gateway.CommandGateway;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -84,12 +86,12 @@ public class RPSSchema {
             .build();
 
 
-    public static GraphQLObjectType RPSType = newObject()
-            .name("RPS")
+    public static GraphQLObjectType RPSQueryType = newObject()
+            .name("RPSQuery")
             .field(newFieldDefinition()
                     .name("games")
                     .type(new GraphQLList(GameType))
-                    .dataFetcher(environment -> new ArrayList<>(((GamesProjection) environment.getSource()).getGames().values()))
+                    .dataFetcher(environment -> new ArrayList<>(((GraphQLContext) environment.getContext()).gamesProjection.getGames().values()))
                     .build())
             .field(newFieldDefinition()
                     .name("game")
@@ -99,11 +101,29 @@ public class RPSSchema {
                             .description("id of the game")
                             .type(new GraphQLNonNull(GraphQLString))
                             .build())
-                    .dataFetcher(environment -> ((GamesProjection) environment.getSource()).getGames().get(UUID.fromString(environment.getArgument("id"))))
+                    .dataFetcher(environment -> ((GraphQLContext) environment.getContext()).gamesProjection.getGames().get(UUID.fromString(environment.getArgument("id"))))
+                    .build())
+            .build();
+
+    public static GraphQLObjectType RPSMutationType = newObject()
+            .name("RPSMutation")
+            .field(newFieldDefinition()
+                    .name("createGame")
+                    .type(GameType)
+                    .argument(newArgument()
+                            .name("userId")
+                            .description("id of the user creating the game")
+                            .type(new GraphQLNonNull(GraphQLString))
+                            .build())
+                    .dataFetcher(environment -> {
+                        GraphQLContext graphQLContext = (GraphQLContext) environment.getContext();
+                        return graphQLContext.createGame(environment.getArgument("userId"));
+                    })
                     .build())
             .build();
 
     public static GraphQLSchema Schema = GraphQLSchema.newSchema()
-            .query(RPSType)
+            .query(RPSQueryType)
+            .mutation(RPSMutationType)
             .build();
 }

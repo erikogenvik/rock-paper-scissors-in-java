@@ -1,8 +1,11 @@
 package com.jayway.rps.infra.graphql
 
 import com.jayway.rps.domain.Move
+import com.jayway.rps.domain.command.CreateGameCommand
+import com.jayway.rps.domain.event.GameCreatedEvent
 import com.jayway.rps.domain.game.GamesProjection
 import graphql.GraphQL
+import org.axonframework.commandhandling.gateway.CommandGateway
 import spock.lang.Specification
 
 /**
@@ -11,6 +14,7 @@ import spock.lang.Specification
 class RPSSchemaTest extends Specification {
 
     private GamesProjection gameProjection;
+    private GraphQLContext context;
 
     UUID game1Id = UUID.randomUUID();
     UUID game2Id = UUID.randomUUID();
@@ -38,12 +42,14 @@ class RPSSchemaTest extends Specification {
         gameProjection.getGames().put(game1Id, game1);
         gameProjection.getGames().put(game2Id, game2);
 
+
+        context = new GraphQLContext(gameProjection, null);
     }
 
     def "Get all games"() {
 
         when:
-        def result = new GraphQL(RPSSchema.Schema).execute("{games{gameId}}", gameProjection).data;
+        def result = new GraphQL(RPSSchema.Schema).execute("{games{gameId}}", context).data;
 
         then:
 
@@ -54,7 +60,7 @@ class RPSSchemaTest extends Specification {
 
         when:
         def query = "{game(id: \"${game1Id}\") {gameId}}"
-        def result = new GraphQL(RPSSchema.Schema).execute(query, gameProjection).data;
+        def result = new GraphQL(RPSSchema.Schema).execute(query, context).data;
 
         then:
 
@@ -64,10 +70,36 @@ class RPSSchemaTest extends Specification {
     def "Get all games with details"() {
 
         when:
-        def result = new GraphQL(RPSSchema.Schema).execute("{games{gameId, createdBy, loser, winner, state, moves{user, move}}", gameProjection);
+        def result = new GraphQL(RPSSchema.Schema).execute("{games{gameId, createdBy, loser, winner, state, moves{user, move}}", context);
 
         then:
 
-        result.data == [games: [[gameId: game1Id.toString(), createdBy: "user1", loser: "user1", winner: "user2", state: "won", moves: [[user: "user1", move: "rock"], [user: "user2", move: "paper"]]]]];
+        result.data == [games: [
+                [gameId: game1Id.toString(), createdBy: "user1", loser: "user1", winner: "user2", state: "won", moves: [[user: "user1", move: "rock"], [user: "user2", move: "paper"]]],
+                [gameId: game2Id.toString(), createdBy: "user2", loser: null, winner: null, state: "inProgress", moves: [[user: "user1", move: "rock"]]]
+        ]];
+    }
+
+    def "Add game"() {
+
+        given:
+
+        context = Mock(GraphQLContext)
+        context.gamesProjection >> gameProjection
+        context.createGame(_) >> {
+            UUID gameId = UUID.randomUUID()
+            gameProjection.handle(new GameCreatedEvent(gameId, "user1"))
+            return gameProjection.get(game1Id)
+        }
+
+        when:
+        def mutation = "mutation M{ game: createGame(userId: \"user1\") {gameId}}"
+        def result = new GraphQL(RPSSchema.Schema).execute(mutation, context);
+
+        then:
+
+        gameProjection.getGames().size() == 3
+
+        result.data == [game: [gameId: gameProjection.getGames().entrySet().first().key.toString()]];
     }
 }
