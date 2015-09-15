@@ -35,11 +35,16 @@ public class GamesProjection {
         public String loser;
     }
 
+    public Map<UUID, GameState> getGames() {
+        return games;
+    }
+
     private Map<UUID, GameState> games = new HashMap<>();
 
     public GameState get(UUID gameId) {
         return games.get(gameId);
     }
+
 
     @EventHandler
     public void handle(GameCreatedEvent e) {
