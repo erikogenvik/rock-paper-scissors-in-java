@@ -8,7 +8,7 @@ import com.jayway.rps.domain.event.MoveDecidedEvent;
 import org.axonframework.eventhandling.annotation.EventHandler;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,7 +29,7 @@ public class GamesProjection {
     public static class GameState {
         public UUID gameId;
         public String createdBy;
-        public Map<String, Move> moves = new HashMap<String, Move>();
+        public Map<String, Move> moves = new LinkedHashMap<>();
         public State state;
         public String winner;
         public String loser;
@@ -39,7 +39,7 @@ public class GamesProjection {
         return games;
     }
 
-    private Map<UUID, GameState> games = new HashMap<>();
+    private Map<UUID, GameState> games = new LinkedHashMap<>();
 
     public GameState get(UUID gameId) {
         return games.get(gameId);
