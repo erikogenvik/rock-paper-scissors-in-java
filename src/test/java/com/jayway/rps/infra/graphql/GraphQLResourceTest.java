@@ -54,6 +54,17 @@ public class GraphQLResourceTest {
     }
 
     @Test
+    public void whenGetOneGamesIdIsOneReturned() {
+        String query = String.format("{game(id: \"%1s\"){gameId}}", TestDataGenerator.game1Id.toString());
+
+        with().body(query)
+                .post("/graphql")
+                .then().assertThat()
+                .body("game.gameId", equalTo(TestDataGenerator.game1Id.toString()));
+
+    }
+
+    @Test
     public void whenGetAllGamesFullAreAllReturned() {
         String query = "{games{gameId, createdBy, loser, winner, state, moves{user, move}}";
 

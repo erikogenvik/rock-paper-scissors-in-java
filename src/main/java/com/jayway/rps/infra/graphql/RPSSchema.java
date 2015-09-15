@@ -6,8 +6,10 @@ import graphql.schema.*;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.UUID;
 
 import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -29,7 +31,7 @@ public class RPSSchema {
             .field(newFieldDefinition()
                     .name("user")
                     .type(GraphQLString)
-                    .dataFetcher(environment -> ((Map.Entry<String, Move>)environment.getSource()).getKey())
+                    .dataFetcher(environment -> ((Map.Entry<String, Move>) environment.getSource()).getKey())
                     .build())
             .field(newFieldDefinition()
                     .name("move")
@@ -88,6 +90,16 @@ public class RPSSchema {
                     .name("games")
                     .type(new GraphQLList(GameType))
                     .dataFetcher(environment -> new ArrayList<>(((GamesProjection) environment.getSource()).getGames().values()))
+                    .build())
+            .field(newFieldDefinition()
+                    .name("game")
+                    .type(GameType)
+                    .argument(newArgument()
+                            .name("id")
+                            .description("id of the game")
+                            .type(new GraphQLNonNull(GraphQLString))
+                            .build())
+                    .dataFetcher(environment -> ((GamesProjection) environment.getSource()).getGames().get(UUID.fromString(environment.getArgument("id"))))
                     .build())
             .build();
 
