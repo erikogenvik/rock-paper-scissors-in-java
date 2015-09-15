@@ -51,6 +51,7 @@ public class GamesProjection {
         GameState game = new GameState();
         game.gameId = e.gameId;
         game.state = State.inProgress;
+        game.createdBy = e.playerEmail;
         games.put(e.gameId, game);
     }
 

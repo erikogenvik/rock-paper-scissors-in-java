@@ -89,4 +89,37 @@ public class GraphQLResourceTest {
 
     }
 
+    @Test
+    public void whenGetOneGameFullOneIsReturned() {
+        String query = String.format("{game(id: \"%1s\"){gameId, createdBy, loser, winner, state, moves{user, move}}", TestDataGenerator.game1Id.toString());
+
+
+        with().body(query)
+                .post("/graphql")
+                .then().assertThat()
+                .body("game.gameId", equalTo(TestDataGenerator.game1Id.toString()))
+                .body("game.loser", equalTo(TestDataGenerator.user2Id))
+                .body("game.winner", equalTo(TestDataGenerator.user1Id))
+                .body("game.state", equalTo("won"))
+                .body("game.moves[0].user", equalTo(TestDataGenerator.user1Id))
+                .body("game.moves[0].move", equalTo("paper"))
+                .body("game.moves[1].user", equalTo(TestDataGenerator.user2Id))
+                .body("game.moves[1].move", equalTo("rock"));
+    }
+
+    @Test
+    public void whenCreateGameItsCreated() {
+        String query = String.format("mutation M{game: createGame(userId: \"%1s\") {gameId, createdBy, loser, winner, state, moves{user, move}}", TestDataGenerator.user1Id);
+
+
+        with().body(query)
+                .post("/graphql")
+                .then().assertThat()
+                .body("game.createdBy", is(TestDataGenerator.user1Id))
+                .body("game.loser", is(nullValue()))
+                .body("game.winner", is(nullValue()))
+                .body("game.state", equalTo("inProgress"))
+                .body("game.moves", is(emptyIterable()));
+    }
+
 }
