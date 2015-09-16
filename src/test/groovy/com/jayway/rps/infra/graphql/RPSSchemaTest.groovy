@@ -77,6 +77,20 @@ class RPSSchemaTest extends Specification {
 
         result == [game: [gameId: game1Id.toString()]];
     }
+
+    def "Get one game with details with fragments"() {
+
+        when:
+        def query = """query Q{game(id: "${game1Id}") {...gameFields, ...gameDetailsFields}}
+                        fragment gameFields on Game { gameId }
+                        fragment gameDetailsFields on Game { createdBy, loser, winner }"""
+        def result = new GraphQL(RPSSchema.Schema).execute(query, context).data;
+
+        then:
+
+        result == [game: [gameId: game1Id.toString(), createdBy: "user1", loser: "user1", winner: "user2"]];
+    }
+
     def "Get all games with details"() {
 
         when:
@@ -125,7 +139,9 @@ class RPSSchemaTest extends Specification {
         }
 
         when:
-        def mutation = """mutation M{ game: makeMove(userId: "user1", gameId:"${game1Id.toString()}", move: "paper") {gameId, moves{user, move}}}"""
+        def mutation = """mutation M{ game: makeMove(userId: "user1", gameId:"${
+            game1Id.toString()
+        }", move: "paper") {gameId, moves{user, move}}}"""
         def result = new GraphQL(RPSSchema.Schema).execute(mutation, context);
 
         then:
