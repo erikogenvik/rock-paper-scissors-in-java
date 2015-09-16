@@ -122,4 +122,18 @@ public class GraphQLResourceTest {
                 .body("game.moves", is(emptyIterable()));
     }
 
+    @Test
+    public void whenWinningMoveIsMadeItsWon() {
+        String query = String.format("mutation M{game: makeMove(userId: \"%1s\", gameId: \"%2s\", move: \"%3s\") {gameId, createdBy, loser, winner, state, moves{user, move}}", TestDataGenerator.user2Id, TestDataGenerator.game2Id, "scissor");
+
+
+        with().body(query)
+                .post("/graphql")
+                .then().assertThat()
+                .body("game.createdBy", is(TestDataGenerator.user1Id))
+                .body("game.loser", is(TestDataGenerator.user1Id))
+                .body("game.winner", is(TestDataGenerator.user2Id))
+                .body("game.state", equalTo("won"));
+    }
+
 }
