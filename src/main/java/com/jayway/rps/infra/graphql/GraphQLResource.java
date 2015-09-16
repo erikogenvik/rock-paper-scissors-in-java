@@ -15,7 +15,7 @@ import javax.inject.Inject;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Controller
-@RequestMapping(value = "/graphql", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/graphql", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 public class GraphQLResource {
 
     @Inject
