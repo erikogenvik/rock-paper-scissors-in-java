@@ -1,10 +1,8 @@
 package com.jayway.rps.infra.graphql;
 
 import com.jayway.rps.domain.Move;
-import com.jayway.rps.domain.command.CreateGameCommand;
 import com.jayway.rps.domain.game.GamesProjection;
 import graphql.schema.*;
-import org.axonframework.commandhandling.gateway.CommandGateway;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -118,6 +116,29 @@ public class RPSSchema {
                     .dataFetcher(environment -> {
                         GraphQLContext graphQLContext = (GraphQLContext) environment.getContext();
                         return graphQLContext.createGame(environment.getArgument("userId"));
+                    })
+                    .build())
+            .field(newFieldDefinition()
+                    .name("makeMove")
+                    .type(GameType)
+                    .argument(newArgument()
+                            .name("gameId")
+                            .description("id of the game")
+                            .type(new GraphQLNonNull(GraphQLString))
+                            .build())
+                    .argument(newArgument()
+                            .name("userId")
+                            .description("id of the user making the move")
+                            .type(new GraphQLNonNull(GraphQLString))
+                            .build())
+                    .argument(newArgument()
+                            .name("move")
+                            .description("the move being made")
+                            .type(new GraphQLNonNull(GraphQLString))
+                            .build())
+                    .dataFetcher(environment -> {
+                        GraphQLContext graphQLContext = (GraphQLContext) environment.getContext();
+                        return graphQLContext.makeMove(environment.getArgument("gameId"), environment.getArgument("userId"), environment.getArgument("move"));
                     })
                     .build())
             .build();

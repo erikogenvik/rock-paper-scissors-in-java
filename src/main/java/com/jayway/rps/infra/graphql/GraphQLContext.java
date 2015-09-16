@@ -1,6 +1,8 @@
 package com.jayway.rps.infra.graphql;
 
+import com.jayway.rps.domain.Move;
 import com.jayway.rps.domain.command.CreateGameCommand;
+import com.jayway.rps.domain.command.MakeMoveCommand;
 import com.jayway.rps.domain.game.Game;
 import com.jayway.rps.domain.game.GamesProjection;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -24,5 +26,11 @@ public class GraphQLContext {
         UUID gameId = UUID.randomUUID();
         commandGateway.sendAndWait(new CreateGameCommand(gameId, userId));
         return gamesProjection.get(gameId);
+    }
+
+    public GamesProjection.GameState makeMove(String gameId, String userId, String move) {
+        UUID gameIdUUID = UUID.fromString(gameId);
+        commandGateway.sendAndWait(new MakeMoveCommand(gameIdUUID, userId, Move.valueOf(move)));
+        return gamesProjection.get(gameIdUUID);
     }
 }

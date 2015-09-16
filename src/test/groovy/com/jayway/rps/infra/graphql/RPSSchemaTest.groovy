@@ -1,11 +1,10 @@
 package com.jayway.rps.infra.graphql
 
 import com.jayway.rps.domain.Move
-import com.jayway.rps.domain.command.CreateGameCommand
 import com.jayway.rps.domain.event.GameCreatedEvent
+import com.jayway.rps.domain.event.MoveDecidedEvent
 import com.jayway.rps.domain.game.GamesProjection
 import graphql.GraphQL
-import org.axonframework.commandhandling.gateway.CommandGateway
 import spock.lang.Specification
 
 /**
@@ -101,5 +100,26 @@ class RPSSchemaTest extends Specification {
         gameProjection.getGames().size() == 3
 
         result.data == [game: [gameId: gameProjection.getGames().entrySet().first().key.toString()]];
+    }
+
+    def "Make move"() {
+
+        given:
+
+        context = Mock(GraphQLContext)
+        context.gamesProjection >> gameProjection
+        context.makeMove(_, _, _) >> {
+            gameProjection.handle(new MoveDecidedEvent(game1Id, "user2", Move.paper))
+            return gameProjection.get(game1Id)
+        }
+
+        when:
+        def mutation = "mutation M{ game: makeMove(userId: \"user1\", gameId:\"${game1Id.toString()}\", move: \"paper\") {gameId, moves{user, move}}}"
+        def result = new GraphQL(RPSSchema.Schema).execute(mutation, context);
+
+        then:
+
+
+        result.data == [game: [gameId: game1Id.toString(), moves: [[user: "user1", move: "rock"], [user: "user2", move: "paper"]]]];
     }
 }
