@@ -1,10 +1,8 @@
 package com.jayway.rps.infra.graphql;
 
 import com.jayway.rps.domain.game.GamesProjection;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLNonNull;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLSchema;
+import graphql.relay.Relay;
+import graphql.schema.*;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -15,9 +13,9 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 /**
- * Created by erik on 2015-09-14.
+ * Created by erik on 2015-09-17.
  */
-public class RPSSchema {
+public class RelaySchema {
 
 
     public static GraphQLObjectType GameType = newObject()
@@ -54,13 +52,35 @@ public class RPSSchema {
                     .fetchField()
                     .build())
             .build();
+    public static Relay relay = new Relay();
+
+    public static GraphQLInterfaceType NodeInterface = relay.nodeInterface(new TypeResolver() {
+        @Override
+        public GraphQLObjectType getType(Object object) {
+            Relay.ResolvedGlobalId resolvedGlobalId = relay.fromGlobalId((String) object);
+            //TODO: implement
+            return null;
+        }
+    });
+
+    public static GraphQLObjectType GameEdgeType = relay.edgeType("Game", GameType, NodeInterface, new ArrayList<>());
+
+    public static GraphQLObjectType GameConnectionType = relay.connectionType("Game", GameEdgeType, new ArrayList<>());
 
 
-    public static GraphQLObjectType RPSQueryType = newObject()
+    public static GraphQLObjectType RPSRelayQueryType = newObject()
             .name("RPSQuery")
+            .field(relay.nodeField(NodeInterface, new DataFetcher() {
+                @Override
+                public Object get(DataFetchingEnvironment environment) {
+                    //TODO: implement
+                    return null;
+                }
+            }))
             .field(newFieldDefinition()
                     .name("games")
-                    .type(new GraphQLList(GameType))
+                    .type(GameConnectionType)
+                    .argument(relay.getConnectionFieldArguments())
                     .dataFetcher(environment -> new ArrayList<>(((GraphQLContext) environment.getContext()).gamesProjection.getGames().values()))
                     .build())
             .field(newFieldDefinition()
@@ -116,7 +136,7 @@ public class RPSSchema {
             .build();
 
     public static GraphQLSchema Schema = GraphQLSchema.newSchema()
-            .query(RPSQueryType)
+            .query(RPSRelayQueryType)
             .mutation(RPSMutationType)
             .build();
 }
