@@ -102,7 +102,7 @@ class RPSRelaySchemaTest extends Specification {
 
         then:
         def fields = result.data["__type"]["fields"];
-        fields == [[name:"edges", type:[name:null, kind:"LIST", ofType:[name:"GameEdge", kind:"OBJECT"]]], [name:"pageInfo", type:[name:null, kind:"NON_NULL", ofType:[name:"PageInfo", kind:"OBJECT"]]]]
+        fields == [[name: "edges", type: [name: null, kind: "LIST", ofType: [name: "GameEdge", kind: "OBJECT"]]], [name: "pageInfo", type: [name: null, kind: "NON_NULL", ofType: [name: "PageInfo", kind: "OBJECT"]]]]
     }
 
     def "Validate Relay GameEdge schema"() {
@@ -129,6 +129,30 @@ class RPSRelaySchemaTest extends Specification {
 
         then:
         def fields = result.data["__type"]["fields"];
-        fields ==[[name:"node", type:[name:"Game", kind:"OBJECT", ofType:null]], [name:"cursor", type:[name:null, kind:"NON_NULL", ofType:[name:"String", kind:"SCALAR"]]]]
+        fields == [[name: "node", type: [name: "Game", kind: "OBJECT", ofType: null]], [name: "cursor", type: [name: null, kind: "NON_NULL", ofType: [name: "String", kind: "SCALAR"]]]]
+    }
+
+    def "Query for games"() {
+        given:
+        def query = """query GamesQuery{
+                            viewer{
+                                games{
+                                ...__RelayQueryFragment0561emi
+                                }
+                            }
+                        }
+                        fragment __RelayQueryFragment0561emi on GameConnection{
+                            edges{
+                                node {
+                                    gameId
+                                }
+                            }
+                        }"""
+
+        when:
+        def result = new GraphQL(RelaySchema.Schema).execute(query, context);
+
+        then:
+        result.data == [viewer: [games: [edges: [[node: [gameId: game1Id.toString()]], [node: [gameId: game2Id.toString()]]]]]]
     }
 }

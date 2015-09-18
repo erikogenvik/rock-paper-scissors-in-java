@@ -1,10 +1,11 @@
 package com.jayway.rps.infra.graphql;
 
 import com.jayway.rps.domain.game.GamesProjection;
-import graphql.relay.Relay;
+import graphql.relay.*;
 import graphql.schema.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static graphql.Scalars.GraphQLString;
@@ -67,6 +68,33 @@ public class RelaySchema {
 
     public static GraphQLObjectType GameConnectionType = relay.connectionType("Game", GameEdgeType, new ArrayList<>());
 
+    public static GraphQLObjectType ViewerType = newObject()
+            .name("Viewer")
+            .field(newFieldDefinition()
+                    .name("games")
+                    .type(GameConnectionType)
+                    .argument(relay.getConnectionFieldArguments())
+                    .dataFetcher(environment -> {
+                        GraphQLContext context = (GraphQLContext) environment.getContext();
+
+                        List<Edge> edges = new ArrayList<>();
+                        context.gamesProjection.getGames().forEach((uuid, gameState) -> edges.add(new Edge(gameState, new ConnectionCursor("CURSOR_" + edges.size()))));
+
+
+                        PageInfo pageInfo = new PageInfo();
+                        pageInfo.setStartCursor(edges.get(0).getCursor());
+                        pageInfo.setEndCursor(edges.get(edges.size() - 1).getCursor());
+                        pageInfo.setHasPreviousPage(false);
+                        pageInfo.setHasNextPage(false);
+
+                        Connection connection = new Connection();
+                        connection.setEdges(edges);
+                        connection.setPageInfo(pageInfo);
+
+                        return connection;
+                    })
+                    .build())
+            .build();
 
     public static GraphQLObjectType RPSRelayQueryType = newObject()
             .name("RPSQuery")
@@ -78,10 +106,9 @@ public class RelaySchema {
                 }
             }))
             .field(newFieldDefinition()
-                    .name("games")
-                    .type(GameConnectionType)
-                    .argument(relay.getConnectionFieldArguments())
-                    .dataFetcher(environment -> new ArrayList<>(((GraphQLContext) environment.getContext()).gamesProjection.getGames().values()))
+                    .name("viewer")
+                    .type(ViewerType)
+                    .dataFetcher(environment -> new Object())
                     .build())
             .field(newFieldDefinition()
                     .name("game")
