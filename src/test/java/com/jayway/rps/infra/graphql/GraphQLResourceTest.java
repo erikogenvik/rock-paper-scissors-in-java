@@ -67,7 +67,7 @@ public class GraphQLResourceTest {
 
     @Test
     public void whenGetAllGamesFullAreAllReturned() {
-        String query = "{games{gameId, createdBy, loser, winner, state, moves{user, move}}";
+        String query = "{games{gameId, createdBy, loser, winner, state, moves{user, move}}}";
 
 
         with().body(query)
@@ -92,7 +92,7 @@ public class GraphQLResourceTest {
 
     @Test
     public void whenGetOneGameFullOneIsReturned() {
-        String query = String.format("{game(id: \"%1s\"){gameId, createdBy, loser, winner, state, moves{user, move}}", TestDataGenerator.game1Id.toString());
+        String query = String.format("{game(id: \"%1s\"){gameId, createdBy, loser, winner, state, moves{user, move}}}", TestDataGenerator.game1Id.toString());
 
 
         with().body(query)
@@ -111,7 +111,7 @@ public class GraphQLResourceTest {
     @Test
     @DirtiesContext
     public void whenCreateGameItsCreated() {
-        String query = String.format("mutation M{game: createGame(userId: \"%1s\") {gameId, createdBy, loser, winner, state, moves{user, move}}", TestDataGenerator.user1Id);
+        String query = String.format("mutation M{game: createGame(userId: \"%1s\") {gameId, createdBy, loser, winner, state, moves{user, move}}}", TestDataGenerator.user1Id);
 
 
         with().body(query)
@@ -127,7 +127,7 @@ public class GraphQLResourceTest {
     @Test
     @DirtiesContext
     public void whenWinningMoveIsMadeItsWon() {
-        String query = String.format("mutation M{game: makeMove(userId: \"%1s\", gameId: \"%2s\", move: \"%3s\") {gameId, createdBy, loser, winner, state, moves{user, move}}", TestDataGenerator.user2Id, TestDataGenerator.game2Id, "scissor");
+        String query = String.format("mutation M{game: makeMove(userId: \"%1s\", gameId: \"%2s\", move: \"%3s\") {gameId, createdBy, loser, winner, state, moves{user, move}}}", TestDataGenerator.user2Id, TestDataGenerator.game2Id, "scissor");
 
 
         with().body(query)

@@ -94,7 +94,7 @@ class RPSSchemaTest extends Specification {
     def "Get all games with details"() {
 
         when:
-        def result = new GraphQL(RPSSchema.Schema).execute("{games{gameId, createdBy, loser, winner, state, moves{user, move}}", context);
+        def result = new GraphQL(RPSSchema.Schema).execute("{games{gameId, createdBy, loser, winner, state, moves{user, move}}}", context);
 
         then:
 

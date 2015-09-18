@@ -21,13 +21,15 @@ public class TestDataGenerator {
 
     private boolean hasSetupData;
 
-    public static final UUID game1Id = UUID.randomUUID();
-    public static final UUID game2Id = UUID.randomUUID();
+    public static UUID game1Id;
+    public static UUID game2Id;
     public static final String user1Id = "user1";
     public static final String user2Id = "user2";
 
     public void setupTestData() {
         if (!hasSetupData) {
+            game1Id = UUID.randomUUID();
+            game2Id = UUID.randomUUID();
             commandGateway.sendAndWait(new CreateGameCommand(game1Id, user1Id));
             commandGateway.sendAndWait(new MakeMoveCommand(game1Id, user1Id, Move.paper));
             commandGateway.sendAndWait(new MakeMoveCommand(game1Id, user2Id, Move.rock));
