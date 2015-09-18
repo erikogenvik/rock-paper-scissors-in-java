@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
@@ -108,6 +109,7 @@ public class GraphQLResourceTest {
     }
 
     @Test
+    @DirtiesContext
     public void whenCreateGameItsCreated() {
         String query = String.format("mutation M{game: createGame(userId: \"%1s\") {gameId, createdBy, loser, winner, state, moves{user, move}}", TestDataGenerator.user1Id);
 
@@ -123,6 +125,7 @@ public class GraphQLResourceTest {
     }
 
     @Test
+    @DirtiesContext
     public void whenWinningMoveIsMadeItsWon() {
         String query = String.format("mutation M{game: makeMove(userId: \"%1s\", gameId: \"%2s\", move: \"%3s\") {gameId, createdBy, loser, winner, state, moves{user, move}}", TestDataGenerator.user2Id, TestDataGenerator.game2Id, "scissor");
 

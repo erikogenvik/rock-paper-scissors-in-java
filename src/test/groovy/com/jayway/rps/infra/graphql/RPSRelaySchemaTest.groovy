@@ -134,25 +134,12 @@ class RPSRelaySchemaTest extends Specification {
 
     def "Query for games"() {
         given:
-        def query = """query GamesQuery{
-                            viewer{
-                                games{
-                                ...__RelayQueryFragment0561emi
-                                }
-                            }
-                        }
-                        fragment __RelayQueryFragment0561emi on GameConnection{
-                            edges{
-                                node {
-                                    gameId
-                                }
-                            }
-                        }"""
+        def query = """query GamesQuery{viewer{games{edges{node{...__RelayQueryFragment0561emi},cursor},pageInfo{hasNextPage,hasPreviousPage}}}} fragment __RelayQueryFragment0561emi on Game{gameId}"""
 
         when:
         def result = new GraphQL(RelaySchema.Schema).execute(query, context);
 
         then:
-        result.data == [viewer: [games: [edges: [[node: [gameId: game1Id.toString()]], [node: [gameId: game2Id.toString()]]]]]]
+        result.data == [viewer: [games: [edges: [[node: [gameId: game1Id.toString()], cursor: "CURSOR_0"], [node: [gameId: game2Id.toString()], cursor: "CURSOR_1"]], pageInfo: [hasNextPage: false, hasPreviousPage: false]]]]
     }
 }

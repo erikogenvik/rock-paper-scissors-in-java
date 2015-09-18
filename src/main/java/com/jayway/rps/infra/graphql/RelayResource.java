@@ -46,7 +46,9 @@ public class RelayResource {
             String errors = StringUtils.collectionToDelimitedString(result.getErrors(), "\n\r");
             throw new RuntimeException(String.format("Error when executing query '%1s': %2s", querySpec.query, errors));
         }
-        return ResponseEntity.ok(result.getData());
+        RelayResponse response = new RelayResponse();
+        response.data = result.getData();
+        return ResponseEntity.ok(response);
     }
 
     @RequestMapping(value = "/schema", method = RequestMethod.GET)

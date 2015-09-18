@@ -82,8 +82,10 @@ public class RelaySchema {
 
 
                         PageInfo pageInfo = new PageInfo();
-                        pageInfo.setStartCursor(edges.get(0).getCursor());
-                        pageInfo.setEndCursor(edges.get(edges.size() - 1).getCursor());
+                        if (!edges.isEmpty()) {
+                            pageInfo.setStartCursor(edges.get(0).getCursor());
+                            pageInfo.setEndCursor(edges.get(edges.size() - 1).getCursor());
+                        }
                         pageInfo.setHasPreviousPage(false);
                         pageInfo.setHasNextPage(false);
 
