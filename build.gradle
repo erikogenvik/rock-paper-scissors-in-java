@@ -1,12 +1,15 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.5.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.6.RELEASE")
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.11.3'
     }
 }
 
+apply plugin: 'com.github.ben-manes.versions'
 apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: 'spring-boot'
@@ -31,27 +34,27 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.hateoas:spring-hateoas:0.16.0.RELEASE")
-    compile 'org.springframework.data:spring-data-jpa:1.7.1.RELEASE'
+    compile 'org.springframework.data:spring-data-jpa:1.9.0.RELEASE'
     compile("org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE")
 
     compile("com.h2database:h2")
 
-    compile("org.axonframework:axon-core:2.4")
+    compile("org.axonframework:axon-core:2.4.3")
 
     compile("javax.inject:javax.inject:1")
 
-    compile('org.apache.commons:commons-lang3:3.3.2')
+    compile('org.apache.commons:commons-lang3:3.4')
 
     compile(project(':graphql-java'))
 
     runtime('postgresql:postgresql:9.1-901-1.jdbc4')
 
     testCompile("org.springframework.boot:spring-boot-starter-test")
-    testCompile('com.jayway.restassured:rest-assured:2.4.0')
+    testCompile('com.jayway.restassured:rest-assured:2.6.0')
     testCompile('org.glassfish:javax.json:1.0.4')
     testCompile("junit:junit-dep:4.11")
-    testCompile("org.axonframework:axon-test:2.4")
-    testCompile 'org.codehaus.groovy:groovy-all:2.4.4'
+    testCompile("org.axonframework:axon-test:2.4.3")
+    testCompile 'org.codehaus.groovy:groovy-all:2.4.5'
     testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
 }
 
