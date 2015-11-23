@@ -5,12 +5,14 @@ import graphql.relay.*;
 import graphql.schema.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLInputObjectField.newInputObjectField;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 /**
@@ -124,21 +126,33 @@ public class RelaySchema {
                     .build())
             .build();
 
+
+    public static GraphQLFieldDefinition createGameFields = relay.mutationWithClientMutationId(
+            "CreateGame",
+            "createGame",
+            Arrays.asList(newInputObjectField()
+                    .name("userId")
+                    .type(GraphQLString)
+                    .build()),
+            Arrays.asList(newFieldDefinition()
+                    .name("game")
+                    .type(GameType)
+                    .build()),
+            environment -> {
+                GraphQLContext graphQLContext = (GraphQLContext) environment.getContext();
+                GamesProjection.GameState gameState = graphQLContext.createGame(environment.getArgument("userId"));
+
+                CreateGamePayload payload = new CreateGamePayload();
+                payload.clientMutationId = environment.getArgument("clientMutationId");
+                payload.game = gameState;
+                return payload;
+            }
+    );
+
+
     public static GraphQLObjectType RPSMutationType = newObject()
             .name("RPSMutation")
-            .field(newFieldDefinition()
-                    .name("createGame")
-                    .type(GameType)
-                    .argument(newArgument()
-                            .name("userId")
-                            .description("id of the user creating the game")
-                            .type(new GraphQLNonNull(GraphQLString))
-                            .build())
-                    .dataFetcher(environment -> {
-                        GraphQLContext graphQLContext = (GraphQLContext) environment.getContext();
-                        return graphQLContext.createGame(environment.getArgument("userId"));
-                    })
-                    .build())
+            .field(createGameFields)
             .field(newFieldDefinition()
                     .name("makeMove")
                     .type(GameType)
@@ -167,5 +181,6 @@ public class RelaySchema {
     public static GraphQLSchema Schema = GraphQLSchema.newSchema()
             .query(RPSRelayQueryType)
             .mutation(RPSMutationType)
+
             .build();
 }

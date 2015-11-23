@@ -1,6 +1,7 @@
 package com.jayway.rps.infra.graphql
 
 import com.jayway.rps.domain.Move
+import com.jayway.rps.domain.event.GameCreatedEvent
 import com.jayway.rps.domain.game.GamesProjection
 import graphql.GraphQL
 import spock.lang.Specification
@@ -141,5 +142,38 @@ class RPSRelaySchemaTest extends Specification {
 
         then:
         result.data == [viewer: [games: [edges: [[node: [gameId: game1Id.toString()], cursor: "CURSOR_0"], [node: [gameId: game2Id.toString()], cursor: "CURSOR_1"]], pageInfo: [hasNextPage: false, hasPreviousPage: false]]]]
+    }
+
+    def "Add game"() {
+
+        given:
+
+        context = Mock(GraphQLContext)
+        context.gamesProjection >> gameProjection
+        context.createGame(_) >> {
+            UUID gameId = UUID.randomUUID()
+            gameProjection.handle(new GameCreatedEvent(gameId, "user1"))
+            return gameProjection.get(game1Id)
+        }
+
+        when:
+        def mutation = """mutation M {
+                            createGame(input: {userId: "user1", clientMutationId: "1"})
+                            {
+                                game
+                                {
+                                    gameId
+                                    createdBy
+                                }
+                                clientMutationId
+                            }
+                        }"""
+        def result = new GraphQL(RelaySchema.Schema).execute(mutation, context);
+
+        then:
+
+        gameProjection.getGames().size() == 3
+
+        result.data == [game: [gameId: gameProjection.getGames().entrySet().first().key.toString()]];
     }
 }
