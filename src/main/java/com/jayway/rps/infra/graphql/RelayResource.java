@@ -4,7 +4,6 @@ import com.jayway.rps.domain.game.GamesProjection;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.spi.LoggerFactory;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -39,7 +38,7 @@ public class RelayResource {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity query(@RequestBody @Valid RelaySpec querySpec) {
-        ExecutionResult result = new GraphQL(RelaySchema.Schema).execute(querySpec.query, new GraphQLContext(gamesProjection, commandGateway));
+        ExecutionResult result = new GraphQL(RelaySchema.Schema).execute(querySpec.query, new GraphQLContext(gamesProjection, commandGateway), querySpec.variables);
 
         if (result.getErrors() != null && !result.getErrors().isEmpty()) {
             result.getErrors().forEach(graphQLError -> log.error("GraphQL error: " + graphQLError.toString()));

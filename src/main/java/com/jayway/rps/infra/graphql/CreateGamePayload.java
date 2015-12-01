@@ -8,4 +8,12 @@ import com.jayway.rps.domain.game.GamesProjection;
 public class CreateGamePayload {
     public GamesProjection.GameState game;
     public String clientMutationId;
+
+    public GamesProjection.GameState getGame() {
+        return game;
+    }
+
+    public String getClientMutationId() {
+        return clientMutationId;
+    }
 }

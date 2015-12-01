@@ -4,10 +4,7 @@ import com.jayway.rps.domain.game.GamesProjection;
 import graphql.relay.*;
 import graphql.schema.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
@@ -140,10 +137,11 @@ public class RelaySchema {
                     .build()),
             environment -> {
                 GraphQLContext graphQLContext = (GraphQLContext) environment.getContext();
-                GamesProjection.GameState gameState = graphQLContext.createGame(environment.getArgument("userId"));
+                Map<String, String> input = environment.getArgument("input");
+                GamesProjection.GameState gameState = graphQLContext.createGame(input.get("userId"));
 
                 CreateGamePayload payload = new CreateGamePayload();
-                payload.clientMutationId = environment.getArgument("clientMutationId");
+                payload.clientMutationId = input.get("clientMutationId");
                 payload.game = gameState;
                 return payload;
             }
